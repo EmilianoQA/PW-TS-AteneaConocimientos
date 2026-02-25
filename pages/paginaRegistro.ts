@@ -15,6 +15,7 @@ export class PaginaRegistro {
     readonly buttonMostrarPassword: Locator;
     readonly buttonMostrarConfirmarPassword: Locator;
     readonly linkPoliticaPrivacidad: Locator;
+    readonly modalVerificacionEmail: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -30,6 +31,8 @@ export class PaginaRegistro {
         this.buttonMostrarPassword = page.getByRole('button', { name: 'Mostrar contraseña' }).first();
         this.buttonMostrarConfirmarPassword = page.getByRole('button', { name: 'Mostrar contraseña' }).last();
         this.linkPoliticaPrivacidad = page.getByRole('link', { name: 'Política de Privacidad', exact: true })
+        this.modalVerificacionEmail = page.getByRole('heading', { name: 'Verifica tu email' });
+
     }
 
    async ingresarNombre(nombre: string) {
@@ -68,7 +71,10 @@ export class PaginaRegistro {
     async checkLinkPoliticaPrivacidad() {
         await this.linkPoliticaPrivacidad.click();
     }
-
+    
+    async verificarModalVerificacionEmail() {
+        await this.modalVerificacionEmail.isVisible();
+    }
     async registrarEstudiante(nombre: string, apellido: string, email: string, password: string, confirmarPassword: string) {
         await this.ingresarNombre(nombre);
         await this.ingresarApellido(apellido);
