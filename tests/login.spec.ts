@@ -33,3 +33,6 @@ test('Login valido con usuario existente', async ({ page }) => {
     await pagianaDashboard.verificarIconoUsuarioVisible();
 });
 
+// Pendiente:
+// - Validar la respuesta de la API (puedes usar page.on('response') para esto)
+// - Diseñar casos de pruebas no exitosos (ejemplo: login con email no registrado, login con password incorrecta, etc.)
