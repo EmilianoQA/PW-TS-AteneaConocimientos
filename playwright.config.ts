@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// Resolver aliases de TypeScript
+require('tsconfig-paths/register');
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -38,7 +41,7 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-/*
+    /*
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },

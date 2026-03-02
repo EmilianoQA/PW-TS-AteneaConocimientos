@@ -1,26 +1,26 @@
-import {Locator, Page} from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 export class PaginaHome {
-    readonly page: Page;
-    readonly botonCrearCuenta: Locator;
-    readonly botonIngresar: Locator;
-    readonly urlhome = process.env.BASE_URL;
+  readonly page: Page;
+  readonly botonCrearCuenta: Locator;
+  readonly botonIngresar: Locator;
+  readonly urlhome = process.env.BASE_URL;
 
-    constructor(page: Page) {
-        this.page = page;
-        this.botonCrearCuenta = page.getByRole('link', { name: 'Crear cuenta' });   
-        this.botonIngresar = page.getByRole('link', { name: 'Ingresar' }); 
-    }
+  constructor(page: Page) {
+    this.page = page;
+    this.botonCrearCuenta = page.getByRole('link', { name: 'Crear cuenta' });
+    this.botonIngresar = page.getByRole('link', { name: 'Ingresar' });
+  }
 
-    async navegarAhome() { 
-        await this.page.goto(this.urlhome!) ;
-    }
+  async navegarAhome() {
+    await this.page.goto(this.urlhome!);
+  }
 
-    async navegarAregistro() { 
-        await this.botonCrearCuenta.click();
-    }
+  async navegarAregistro() {
+    await this.botonCrearCuenta.click();
+  }
 
-    async navegarAingresar() { 
-        await this.botonIngresar.click();
-    }
+  async navegarAingresar() {
+    await this.botonIngresar.click();
+  }
 }
