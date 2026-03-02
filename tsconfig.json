@@ -12,9 +12,10 @@
     "paths": {
       "@pages/*": ["pages/*"],
       "@tests/*": ["tests/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@data/*": ["data/*"]
     },
     "types": ["node", "@playwright/test"]
   },
-  "include": ["tests", "pages", "utils", "playwright.config.ts"]
+  "include": ["tests", "pages", "utils", "data", "playwright.config.ts"]
 }

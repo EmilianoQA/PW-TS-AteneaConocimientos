@@ -3,10 +3,14 @@ import dotenv from 'dotenv';
 import { PaginaHome } from '@pages/paginaHome';
 import { PaginaRegistro } from '@pages/paginaRegistro';
 import { Helpers } from '@utils/helpers';
+import { DataFactory } from '@utils/dataFactory';
+import { registroData } from '@data/registro';
+import { endpoints } from '@data/endpoints';
 
 let paginaHome: PaginaHome;
 let paginaRegistro: PaginaRegistro;
 let helpers: Helpers;
+const dataFactory = new DataFactory();
 
 dotenv.config();
 
@@ -17,26 +21,43 @@ test.beforeEach(({ page }) => {
 });
 
 test('Registro de estudiante (sign up)', async () => {
-  const emailAleatorio = `user${Date.now()}@example.com`;
-
   await paginaHome.navegarAhome();
   await paginaHome.navegarAregistro();
   await paginaRegistro.registrarEstudiante(
-    'Estudiante',
-    'Ejemplo',
-    emailAleatorio,
-    'password123',
-    'password123',
+    registroData.estudianteValido.nombre,
+    registroData.estudianteValido.apellido,
+    dataFactory.generarEmail(),
+    registroData.estudianteValido.password,
+    registroData.estudianteValido.password,
   );
-  await helpers.verificarRespuestaApi('/api/students/register', 201, 'POST');
+  await helpers.verificarRespuestaApi(endpoints.registro, 201, 'POST');
   await paginaRegistro.verificarModalVerificacionEmail();
   await helpers.verificarHeadingVisible('Verifica tu email');
 });
 
-// pendiente
-// validar la respuesta de api
-// diseñasar casos de puebas no existosos
-// crear archivo de datos,
-// meter las endpoint en una lista por si cambian, no tener que cambiar en todos los test, solo en el archivo de datos
-// crear el metodo para crear un email aleatorio,
-// ejemplo de caso no exitoso: registro con email ya existente, registro con password que no cumple con los requisitos, etc.
+test('Registro con email ya existente', async () => {
+  await paginaHome.navegarAhome();
+  await paginaHome.navegarAregistro();
+  await paginaRegistro.registrarEstudiante(
+    registroData.emailExistente.nombre,
+    registroData.emailExistente.apellido,
+    registroData.emailExistente.email,
+    registroData.emailExistente.password,
+    registroData.emailExistente.password,
+  );
+  await helpers.verificarRespuestaApi(endpoints.registro, 409, 'POST');
+  await paginaRegistro.verificarAlertaErrorVisible('Ya existe una cuenta con este email.');
+});
+
+test('Registro con password que no cumple los requisitos', async () => {
+  await paginaHome.navegarAhome();
+  await paginaHome.navegarAregistro();
+  await paginaRegistro.registrarEstudiante(
+    registroData.passwordDebil.nombre,
+    registroData.passwordDebil.apellido,
+    dataFactory.generarEmail(),
+    registroData.passwordDebil.password,
+    registroData.passwordDebil.password,
+  );
+  await paginaRegistro.verificarErrorPasswordVisible();
+});
