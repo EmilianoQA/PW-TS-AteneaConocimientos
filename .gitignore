@@ -8,4 +8,5 @@ node_modules/
 /playwright/.auth/
 apuntes.md
 .env
-
+notas.md
+documentacion/
