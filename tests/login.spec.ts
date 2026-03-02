@@ -15,7 +15,6 @@ test.beforeEach(({ page }) => {
   pagianaDashboard = new PaginaDashboard(page);
 });
 
-// Tu test original (lo dejamos tal cual)
 test('Login valido con usuario existente', async ({ page }) => {
   const paginaHomeUrl = process.env.BASE_URL;
 

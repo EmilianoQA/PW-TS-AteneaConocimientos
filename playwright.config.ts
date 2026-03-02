@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // Resolver aliases de TypeScript
-require('tsconfig-paths/register');
+import 'tsconfig-paths/register';
 
 /**
  * Read environment variables from file.
