@@ -85,7 +85,7 @@ export class PaginaRegistro {
   }
 
   async verificarAlertaErrorVisible(texto: string) {
-    await expect(this.alertaError).toBeVisible();
+    await this.alertaError.waitFor({ state: 'visible', timeout: 10000 });
     await expect(this.alertaError).toContainText(texto);
   }
 

@@ -24,7 +24,7 @@ export class PaginaLogin {
     this.buttonIngresar = page.getByRole('button', { name: 'Ingresar' });
     this.linkOlvideMiPassword = page.getByRole('link', { name: '¿Olvidaste tu contraseña?' });
     this.linkCrearCuenta = page.getByRole('link', { name: '¿No tienes cuenta? Crea tu' });
-    this.alertaError = page.locator('[role="alert"]');
+    this.alertaError = page.getByText('Invalid credentials.');
   }
   async ingresarEmail(email: string) {
     await this.inputEmail.fill(email);
@@ -37,6 +37,6 @@ export class PaginaLogin {
   }
 
   async verificarAlertaErrorVisible() {
-    await expect(this.alertaError).toBeVisible();
+    await this.alertaError.waitFor({ state: 'visible', timeout: 10000 });
   }
 }
