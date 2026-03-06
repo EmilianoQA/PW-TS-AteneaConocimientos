@@ -15,7 +15,7 @@ export class Helpers {
 
   async verificarHeadingVisible(texto: string) {
     const elemento = this.page.getByRole('heading', { name: texto });
-    await expect(elemento).toBeVisible();
+    await elemento.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async verificarRespuestaApi(url: string, status: number, method: string) {

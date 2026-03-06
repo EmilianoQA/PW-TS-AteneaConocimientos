@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 
 // Clase que representa la página de registro
 export class PaginaRegistro {
@@ -16,6 +16,8 @@ export class PaginaRegistro {
   readonly buttonMostrarConfirmarPassword: Locator;
   readonly linkPoliticaPrivacidad: Locator;
   readonly modalVerificacionEmail: Locator;
+  readonly alertaError: Locator;
+  readonly errorPassword: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -37,6 +39,8 @@ export class PaginaRegistro {
       exact: true,
     });
     this.modalVerificacionEmail = page.getByRole('heading', { name: 'Verifica tu email' });
+    this.alertaError = page.locator('[role="alert"]');
+    this.errorPassword = page.locator('#password-helper-text.Mui-error');
   }
 
   async ingresarNombre(nombre: string) {
@@ -78,6 +82,15 @@ export class PaginaRegistro {
 
   async verificarModalVerificacionEmail() {
     await this.modalVerificacionEmail.isVisible();
+  }
+
+  async verificarAlertaErrorVisible(texto: string) {
+    await this.alertaError.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(this.alertaError).toContainText(texto);
+  }
+
+  async verificarErrorPasswordVisible() {
+    await expect(this.errorPassword).toBeVisible();
   }
   async registrarEstudiante(
     nombre: string,

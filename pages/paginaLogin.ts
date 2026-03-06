@@ -1,6 +1,6 @@
 // page para login
 
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 
 export class PaginaLogin {
   readonly page: Page;
@@ -12,6 +12,7 @@ export class PaginaLogin {
   readonly linkCrearCuenta: Locator;
   readonly buttonMostrarPassword: Locator;
   readonly buttonAccederConGoogle: Locator;
+  readonly alertaError: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,6 +24,7 @@ export class PaginaLogin {
     this.buttonIngresar = page.getByRole('button', { name: 'Ingresar' });
     this.linkOlvideMiPassword = page.getByRole('link', { name: '¿Olvidaste tu contraseña?' });
     this.linkCrearCuenta = page.getByRole('link', { name: '¿No tienes cuenta? Crea tu' });
+    this.alertaError = page.getByText('Invalid credentials.');
   }
   async ingresarEmail(email: string) {
     await this.inputEmail.fill(email);
@@ -32,5 +34,9 @@ export class PaginaLogin {
   }
   async hacerClickEnIngresar() {
     await this.buttonIngresar.click();
+  }
+
+  async verificarAlertaErrorVisible() {
+    await this.alertaError.waitFor({ state: 'visible', timeout: 10000 });
   }
 }
