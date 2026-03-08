@@ -4,7 +4,7 @@ export class PaginaHome {
   readonly page: Page;
   readonly botonCrearCuenta: Locator;
   readonly botonIngresar: Locator;
-  readonly urlhome = process.env.BASE_URL;
+  //readonly urlhome = process.env.BASE_URL;
 
   constructor(page: Page) {
     this.page = page;
@@ -13,7 +13,8 @@ export class PaginaHome {
   }
 
   async navegarAhome() {
-    await this.page.goto(this.urlhome!);
+    //await this.page.goto(this.urlhome!);
+    await this.page.goto('/');
   }
 
   async navegarAregistro() {

@@ -1,7 +1,36 @@
 import { defineConfig, devices } from '@playwright/test';
-
-// Resolver aliases de TypeScript
+import * as dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 import 'tsconfig-paths/register';
+
+
+
+const resolveEnvFile = (): string | undefined => {
+    const testEnv = process.env.TEST_ENV ?? 'qa';
+    const candidateFiles = [
+        path.resolve(__dirname, `.env.${testEnv}`),
+        path.resolve(__dirname, '.env'),
+    ];
+
+    return candidateFiles.find((filePath) => fs.existsSync(filePath));
+};
+
+const envFile = resolveEnvFile();
+if (envFile) {
+    dotenv.config({ path: envFile });
+}
+
+const baseURL =
+    process.env.PLAYWRIGHT_TEST_BASE_URL ||
+    process.env.BASE_URL ||
+    'https://qa.ateneaconocimientos.com';
+const isCI = !!process.env.CI;
+const screenshotMode = isCI ? 'only-on-failure' : 'on';
+const videoMode = isCI ? 'retain-on-failure' : 'on';
+
+
+
 
 /**
  * Read environment variables from file.
@@ -31,9 +60,12 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     // baseURL: 'http://localhost:3000',
-
+    baseURL: baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    video: videoMode,
+    screenshot: screenshotMode,
+    
   },
 
   /* Configure projects for major browsers */
