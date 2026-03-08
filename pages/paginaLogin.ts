@@ -1,6 +1,6 @@
 // page para login
 
-import { Locator, Page, expect } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 export class PaginaLogin {
   readonly page: Page;
