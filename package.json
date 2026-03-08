@@ -23,6 +23,7 @@
   },
   "scripts": {
     "test": "playwright test",
+    "test:qa": "TEST_ENV=qa playwright test",
     "test:headed": "playwright test --headed",
     "test:ci": "playwright test --reporter=line",
     "report:open": "playwright show-report",
