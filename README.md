@@ -1,6 +1,6 @@
 # Atenea Conocimientos - Test Automation Suite
 
-> 📌 **Proyecto Personal de Portafolio** - Suite de automatización E2E desarrollada como parte de mi portafolio profesional para demostrar expertise en QA Automation, arquitectura de tests y buenas prácticas de desarrollo.
+> 📌 **Proyecto Personal de Portafolio** - Suite de automatización en desarrollo como parte de mi portafolio profesional para demostrar expertise Playwright TS, arquitectura de test y buenas prácticas de ingenieria de QA.
 
 ## 📋 Descripción General
 
