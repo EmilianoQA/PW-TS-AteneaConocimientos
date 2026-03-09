@@ -4,6 +4,16 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+  
 jobs:
   test:
     timeout-minutes: 60
@@ -28,3 +38,28 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+      # --- Preparar GitHub Pages ---
+      - name: Setup Pages
+        if: ${{ github.event_name == 'push' && !cancelled() }}
+        uses: actions/configure-pages@v5
+
+      # --- NUEVO: Subir el reporte para Pages ---
+      - name: Upload Pages artifact
+        if: ${{ github.event_name == 'push' && !cancelled() }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: playwright-report
+
+  # --- Desplegar la página ---
+  deploy:
+    if: ${{ github.event_name == 'push' }}
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
