@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import 'tsconfig-paths/register';
+//import 'tsconfig-paths/register';
 
 const resolveEnvFile = (): string | undefined => {
   const testEnv = process.env.TEST_ENV ?? 'qa';
