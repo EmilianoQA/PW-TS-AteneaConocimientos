@@ -48,13 +48,14 @@ jobs:
 
       # --- NUEVO: Subir el reporte para Pages ---
       - name: Upload Pages artifact
-        if: ${{ github.event_name == 'push' && !cancelled() }}
+        if: ${{ !cancelled() }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: playwright-report
 
   # --- Desplegar la página ---
   deploy:
+    if: ${{ !cancelled() }}
     needs: test
     runs-on: ubuntu-latest
     environment:
