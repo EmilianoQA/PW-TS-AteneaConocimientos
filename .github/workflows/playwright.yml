@@ -65,3 +65,15 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+    
+     # --- Enviar mensaje a Slack ---
+      - name: Notify Slack
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ "${SLACK_WEBHOOK_URL}" != "" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"🔔 *Pruebas de Playwright terminadas!*\n🔗 *Ver Reporte:* ${{ steps.deployment.outputs.page_url }}"}' \
+            ${SLACK_WEBHOOK_URL}
+          fi
