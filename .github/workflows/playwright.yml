@@ -1,39 +1,59 @@
 name: Playwright
 on:
+  # Corre cuando hago push o pull request a main o master
   push:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  # Si quiero apuntar a otra URL, la escribo en el campo; si lo dejo vacío usa la del secret
   workflow_dispatch:
- 
+    inputs:
+      base_url:
+        description: URL contra la que correr las pruebas (opcional, por defecto usa el secret BASE_URL)
+        required: false
+        default: ''
 
+# Permisos necesarios para publicar el reporte en GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
+# Si se dispara un nuevo run mientras hay uno corriendo en la misma rama, cancela el anterior
 concurrency:
-  group: github-pages
+  group: playwright-${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
-  
+
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
+      # Descargo el código del repositorio
       - uses: actions/checkout@v4
+
+      # Instalo Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+
+      # Instalo las dependencias del proyecto
       - name: Install dependencies
         run: npm ci
+
+      # Instalo el navegador Chromium para Playwright
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
+
+      # Corro los tests. Si fallan, el workflow sigue igual para poder publicar el reporte
       - name: Run Playwright tests
+        id: run_tests
         continue-on-error: true
         env:
-          BASE_URL: ${{ secrets.BASE_URL }}
+          BASE_URL: ${{ github.event.inputs.base_url || secrets.BASE_URL }}
         run: npx playwright test --project=chromium
+
+      # Guardo el reporte como artifact en GitHub Actions por 30 días
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -41,39 +61,160 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-      # --- Preparar GitHub Pages ---
-      - name: Setup Pages
-        if: ${{ github.event_name == 'push' && !cancelled() }}
-        uses: actions/configure-pages@v5
-
-      # --- Subir el reporte para Pages ---
-      - name: Upload Pages artifact
+      # Publico el reporte en GitHub Pages con historial
+      # Cada run genera su propia carpeta con nombre único
+      # Se conservan los últimos 20 reportes y se actualiza el índice
+      - name: Prepare and commit Playwright report history
         if: ${{ !cancelled() }}
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: playwright-report
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          BRANCH: ${{ github.ref_name }}
+          SHORT_SHA: ${{ github.sha }}
+          TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-  # --- Desplegar la página ---
+          echo "📥 Clonando gh-pages..."
+          git clone --depth 1 --branch gh-pages "https://x-access-token:${TOKEN}@github.com/${REPO}.git" gh-pages
+          cd gh-pages
+
+          safe_branch=$(echo "${BRANCH}" | tr -cd '[:alnum:]-_' | tr '/' '-')
+          timestamp=$(date -u +'%Y%m%d-%H%M%S')
+          folder_name="run-${RUN_NUMBER}-${safe_branch}-${timestamp}-$(echo ${SHORT_SHA} | cut -c1-7)"
+          mkdir -p "$folder_name"
+
+          echo "📦 Copiando reporte..."
+          cp -R ../playwright-report/. "$folder_name"/
+
+          rm -rf latest
+          cp -R "$folder_name" latest
+
+          runs=( $(ls -td run-* 2>/dev/null || true) )
+          if [ ${#runs[@]} -gt 20 ]; then
+            echo "🧹 Limpiando runs antiguos..."
+            for dir in "${runs[@]:20}"; do
+              echo "  - Eliminando $dir"
+              rm -rf "$dir"
+            done
+          fi
+
+          echo "🪄 Actualizando índice..."
+          {
+            echo '<!DOCTYPE html>'
+            echo '<html lang="es"><head><meta charset="UTF-8" />'
+            echo '<title>Playwright Reports</title>'
+            echo '<style>body{font-family:sans-serif;margin:2rem}a{color:#0366d6}</style></head><body>'
+            echo '<h1>Historial de reportes Playwright</h1>'
+            echo '<p>Se conservan los últimos 20 reportes. Usa <code>latest/</code> para el más reciente.</p><ul>'
+            for d in $(ls -td run-* 2>/dev/null || true); do
+              echo "<li><a href=\"${d}/index.html\">${d}</a></li>"
+            done
+            echo '<li><a href="latest/index.html">⭐ latest (más reciente)</a></li>'
+            echo '</ul></body></html>'
+          } > index.html
+
+          git add .
+          git commit -m "📊 Add Playwright report $folder_name" || echo "No hay cambios para commitear."
+          git push origin gh-pages
+
+          echo "$folder_name" > ../folder_name.txt
+
+      # Mando notificación a Slack con el resultado de los tests y links al reporte
+      - name: Notify Slack
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEST_STATUS: ${{ steps.run_tests.outcome }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "${SLACK_WEBHOOK_URL}" = "" ]; then
+            echo "No hay webhook de Slack configurado, saltando notificación."
+            exit 0
+          fi
+
+          if [ "${TEST_STATUS}" = "success" ]; then
+            status_emoji="🟢"
+            status_text="Todos los tests pasaron"
+          else
+            status_emoji="🔴"
+            status_text="Hay tests fallidos"
+          fi
+
+          report_url="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/latest/"
+
+          folder_name=""
+          if [ -f folder_name.txt ]; then
+            folder_name=$(cat folder_name.txt)
+          fi
+
+          if [ "${folder_name}" != "" ]; then
+            run_report_url="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/${folder_name}/"
+          else
+            run_report_url="${report_url}"
+          fi
+
+          payload=$(cat <<EOF
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "${status_emoji} Playwright CI — ${status_text}"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  { "type": "mrkdwn", "text": "*Repositorio:*\n\`${REPO}\`" },
+                  { "type": "mrkdwn", "text": "*Rama:*\n\`${BRANCH}\`" },
+                  { "type": "mrkdwn", "text": "*Disparado por:*\n\`${ACTOR}\`" },
+                  { "type": "mrkdwn", "text": "*Estado:*\n${status_emoji} ${TEST_STATUS}" }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": { "type": "plain_text", "text": "📊 Ver reporte de este run" },
+                    "url": "${run_report_url}"
+                  },
+                  {
+                    "type": "button",
+                    "text": { "type": "plain_text", "text": "⭐ Ver último reporte" },
+                    "url": "${report_url}"
+                  },
+                  {
+                    "type": "button",
+                    "text": { "type": "plain_text", "text": "▶️ Ver ejecución en GitHub" },
+                    "url": "${RUN_URL}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data "${payload}" \
+            "${SLACK_WEBHOOK_URL}"
+
+  # Job para mostrar la URL del reporte en la interfaz de GitHub Actions
   deploy:
     if: ${{ !cancelled() }}
     needs: test
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/latest/
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-    
-     # --- Enviar mensaje a Slack ---
-      - name: Notify Slack
-        if: always()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          if [ "${SLACK_WEBHOOK_URL}" != "" ]; then
-            curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"🔔 *Pruebas de Playwright terminadas!*\n🔗 *Ver Reporte:* ${{ steps.deployment.outputs.page_url }}"}' \
-            ${SLACK_WEBHOOK_URL}
-          fi
+      - name: Report publicado en GitHub Pages
+        run: echo "✅ Reporte disponible en https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/latest/"

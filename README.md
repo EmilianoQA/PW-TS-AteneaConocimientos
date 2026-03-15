@@ -8,7 +8,7 @@ Suite de pruebas automatizadas E2E para la plataforma educativa **Atenea Conocim
 
 **Stack Tecnológico:**
 
-- 🎭  **Playwright** v1.57 - Framework de automatización E2E
+- 🎭 **Playwright** v1.57 - Framework de automatización E2E
 - 🔷 **TypeScript** 5.9 - Type-safe test code
 - 🧹 **ESLint + Prettier** - Code quality & formatting
 - 🐕 **Husky** - Git hooks para garantizar calidad
