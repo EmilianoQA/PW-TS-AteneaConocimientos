@@ -46,7 +46,7 @@ jobs:
         if: ${{ github.event_name == 'push' && !cancelled() }}
         uses: actions/configure-pages@v5
 
-      # --- NUEVO: Subir el reporte para Pages ---
+      # --- Subir el reporte para Pages ---
       - name: Upload Pages artifact
         if: ${{ !cancelled() }}
         uses: actions/upload-pages-artifact@v3
