@@ -26,6 +26,8 @@ concurrency:
 
 jobs:
   test:
+    # No corre si el push lo hizo el bot de GitHub Pages (evita el loop de notificaciones)
+    if: github.actor != 'github-actions[bot]'
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
