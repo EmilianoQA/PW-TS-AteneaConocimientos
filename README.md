@@ -299,6 +299,16 @@ playwright-report/
 
 ---
 
+## 📊 Reportes en Vivo
+
+| | Link |
+|---|---|
+| 📋 Historial de reportes | [Ver historial completo](https://emilianoqa.github.io/PW-TS-AteneaConocimientos/) |
+| ⭐ Último reporte | [Ver último reporte](https://emilianoqa.github.io/PW-TS-AteneaConocimientos/latest/) |
+| ▶️ GitHub Actions | [Ver ejecuciones](https://github.com/EmilianoQA/PW-TS-AteneaConocimientos/actions) |
+
+---
+
 ## 🔗 Integración CI/CD
 
 Este proyecto está diseñado para integrarse con:
