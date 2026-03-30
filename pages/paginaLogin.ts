@@ -26,12 +26,25 @@ export class PaginaLogin {
     this.linkCrearCuenta = page.getByRole('link', { name: '¿No tienes cuenta? Crea tu' });
     this.alertaError = page.getByText('Invalid credentials.');
   }
+
+  async navegarALogin() {
+    await this.page.goto('/login');
+  }
+
+  async iniciarSesion(email: string, password: string) {
+    await this.inputEmail.fill(email);
+    await this.inputPassword.fill(password);
+    await this.buttonIngresar.click();
+  }
+
   async ingresarEmail(email: string) {
     await this.inputEmail.fill(email);
   }
+
   async ingresarPassword(password: string) {
     await this.inputPassword.fill(password);
   }
+
   async hacerClickEnIngresar() {
     await this.buttonIngresar.click();
   }
