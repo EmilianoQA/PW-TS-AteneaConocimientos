@@ -81,7 +81,7 @@ export class PaginaRegistro {
   }
 
   async verificarModalVerificacionEmail() {
-    await this.modalVerificacionEmail.isVisible();
+    await expect(this.modalVerificacionEmail).toBeVisible();
   }
 
   async verificarAlertaErrorVisible(texto: string) {
@@ -92,6 +92,7 @@ export class PaginaRegistro {
   async verificarErrorPasswordVisible() {
     await expect(this.errorPassword).toBeVisible();
   }
+
   async registrarEstudiante(
     nombre: string,
     apellido: string,
