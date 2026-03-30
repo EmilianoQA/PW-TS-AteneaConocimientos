@@ -1,23 +1,21 @@
 // page para dashboard de estudiante
 
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 
 export class PaginaDashboard {
   readonly page: Page;
-  readonly urlDashboard: string;
   readonly iconoUsuario: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.urlDashboard = 'https://qa.ateneaconocimientos.com/dashboard';
     this.iconoUsuario = page.getByRole('button', { name: 'account of current user' });
   }
 
   async verificarUrlDashboard() {
-    await this.page.waitForURL(this.urlDashboard);
+    await this.page.waitForURL(/\/dashboard/);
   }
 
   async verificarIconoUsuarioVisible() {
-    await this.iconoUsuario.isVisible();
+    await expect(this.iconoUsuario).toBeVisible();
   }
 }
