@@ -26,4 +26,13 @@ export class Helpers {
         response.request().method() === method,
     );
   }
+
+  async esperarPorRespuestaAPI(url: string, metodo: string, status: number) {
+    await this.page.waitForResponse(
+      (response) =>
+        response.url().includes(url) &&
+        response.request().method() === metodo &&
+        response.status() === status,
+    );
+  }
 }
